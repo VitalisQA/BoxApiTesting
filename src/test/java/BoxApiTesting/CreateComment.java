@@ -1,5 +1,6 @@
 package BoxApiTesting;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.box.sdk.*;
@@ -41,7 +42,7 @@ public class CreateComment {
             FileInputStream stream = new FileInputStream(".//src//main//java//libs//bfoto_ru_2385.jpg");
             BoxFile.Info newFileInfo = vit.uploadFile(stream, "bfoto_ru_2385.jpg");
             stream.close();
-
+            System.out.format("[%s] %s\n", newFileInfo.getID(), newFileInfo.getName());
             fileID = newFileInfo.getID();
 
         } else {
@@ -51,6 +52,7 @@ public class CreateComment {
                     BoxFile.Info fileInfo = (BoxFile.Info) itemInfo;
                     // Do something with the file.
                     if (fileInfo.getName().equals("bfoto_ru_2385.jpg")){
+                        System.out.format("[%s] %s\n", fileInfo.getID(), fileInfo.getName());
                         fileID = fileInfo.getID();
                     }
 
@@ -77,6 +79,7 @@ public class CreateComment {
             FileInputStream stream = new FileInputStream(".//src//main//java//libs//bfoto_ru_2385.jpg");
             BoxFile.Info newFileInfo = vitFolder.uploadFile(stream, "bfoto_ru_2385.jpg");
             stream.close();
+
             fileID = newFileInfo.getID();
         }
 
@@ -87,6 +90,8 @@ public class CreateComment {
 
         BoxComment comment = new BoxComment(api, commentID);
         comment.delete();
+
+//        assertFalse("Comment was not created :( ", isCommentExist(commentID));
     }
 
     private boolean isCommentExist(String commentID) throws OperatorCreationException, PKCSException, JoseException, IOException {
@@ -95,6 +100,7 @@ public class CreateComment {
         BoxAPIConnection api = new BoxAPIConnection(accessToken);
         BoxComment comment = new BoxComment(api, commentID);
         BoxComment.Info info = comment.getInfo();
+        System.out.format("[%s] %s\n", info.getID(), info.getMessage());
         return (info.getMessage().equals("Test comment"));
     }
 }

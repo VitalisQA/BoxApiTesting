@@ -37,6 +37,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 
+
 public class Authorisation {
 
     public String getAccessToken() throws IOException, OperatorCreationException, PKCSException, JoseException {
@@ -133,9 +134,6 @@ public class Authorisation {
         httpClient.close();
 
 // Parse the JSON using Gson to a Token object
-        class Token {
-            String access_token;
-        }
 
         Token token = (Token) gson.fromJson(response, Token.class);
         String accessToken = token.access_token;
