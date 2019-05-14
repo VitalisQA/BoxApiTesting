@@ -1,4 +1,4 @@
-package BoxApiTesting;
+package boxApiTests;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -7,15 +7,14 @@ import com.box.sdk.*;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCSException;
 import org.jose4j.lang.JoseException;
-import org.junit.Assert;
 import org.junit.Test;
+import resources.Authorisation;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
-public class CreateComment {
+public class CreateCommentBoxSDK {
 
 
 
@@ -40,7 +39,7 @@ public class CreateComment {
 
             BoxFolder vit = new BoxFolder(api, folderID);
             FileInputStream stream = new FileInputStream(".//src//main//java//libs//bfoto_ru_2385.jpg");
-            BoxFile.Info newFileInfo = vit.uploadFile(stream, "bfoto_ru_2385.jpg");
+            BoxFile.Info newFileInfo = vit.uploadFile(stream, ".//src//main//java//libs//bfoto_ru_2385.jpg");
             stream.close();
             System.out.format("[%s] %s\n", newFileInfo.getID(), newFileInfo.getName());
             fileID = newFileInfo.getID();

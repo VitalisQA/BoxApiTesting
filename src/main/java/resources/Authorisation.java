@@ -1,6 +1,5 @@
-package BoxApiTesting;
+package resources;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,9 +134,8 @@ public class Authorisation {
 
 // Parse the JSON using Gson to a Token object
 
-        Token token = (Token) gson.fromJson(response, Token.class);
-        String accessToken = token.access_token;
-        return accessToken;
+        Token token = gson.fromJson(response, Token.class);
+        return token.access_token;
     }
 
 }

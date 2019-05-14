@@ -1,4 +1,4 @@
-package BoxApiTesting;
+package resources;
 
 // Define a class that we can parse
 // the json into
