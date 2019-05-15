@@ -1,4 +1,4 @@
-package boxApiTests;
+package boxSDKTests;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

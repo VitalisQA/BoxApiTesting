@@ -52,14 +52,25 @@ class BoxApi {
                 .statusCode(204);
     }
 
-    public void createCommentToAFile(String accessToken, JSONObject requestParams) {
-        given()
+    public ResponseBody createComment(String accessToken, JSONObject requestParams) {
+        return given()
                 .contentType(ContentType.JSON)
                 .body(requestParams.toMap())
                 .header("Authorization", "Bearer " + accessToken)
                 .when()
                 .post("https://api.box.com/2.0/comments")
                 .then()
-                .statusCode(201);
+                .statusCode(201)
+                .extract().response().getBody();
+    }
+
+    public ResponseBody getComment(String commentToCommentID, String accessToken) {
+        return given()
+                .header("Authorization", "Bearer " + accessToken)    // Header
+                .when()
+                .get("https://api.box.com/2.0/comments/"+commentToCommentID)
+                .then()
+                .statusCode(200)
+                .extract().response().getBody();
     }
 }

@@ -9,7 +9,9 @@ import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +82,7 @@ public class BoxRestSteps {
         List<Map<String, Object>> entries = folderItems.jsonPath().getList("entries");
 
         String fileId = "";
-        List<String> commentsId = new ArrayList<>();
+        List<BigInteger> commentsId = new ArrayList<>();
 
         for (Map<String, Object> map : entries) {
             if (map.containsKey("type") && map.get("type").equals("file") && map.get("name").equals(fileName)) {
@@ -95,13 +97,17 @@ public class BoxRestSteps {
             List<Map<String, Object>> commentsEntries = commentsItems.jsonPath().getList("entries");
             for (Map<String, Object> map : commentsEntries) {
                 if (map.containsKey("type") && map.get("type").equals("comment")) {
-                    commentsId.add((String) map.get("id"));
+
+                    commentsId.add(new BigInteger((String) map.get("id")));
                     logger.info("Comment with id " + map.get("id") + " to file " + fileName + " exists in the folder with ID: " + folderId);
                 }
             }
             if (!commentsId.isEmpty()) {
-                for (String commentId : commentsId) {
-                    deleteACommentRest(commentId, accessToken);
+                Collections.sort(commentsId);
+                Collections.reverse(commentsId);
+
+                for (BigInteger commentId : commentsId) {
+                    deleteACommentRest(String.valueOf(commentId), accessToken);
                 }
             }
         }
@@ -116,11 +122,12 @@ public class BoxRestSteps {
         return boxApi.getFileComments(fileId, accessToken);
     }
 
-    public void createCommentToFile(int folderID, String fileName, String accessToken, String messageText) {
+    public String createCommentToFile(int folderID, String fileName, String accessToken, String messageText) {
 
         String fileId = getFileIdRest(folderID, fileName, accessToken);
         if (fileId.equals("")) {
             logger.info("File " + fileName + " doesn't exist in the parent folder");
+            return "";
         } else {
             JSONObject item = new JSONObject();
             JSONObject requestParams = new JSONObject();
@@ -129,8 +136,39 @@ public class BoxRestSteps {
                     .put("id", fileId);
             requestParams.put("item", item)
                     .put("message", messageText);
-            boxApi.createCommentToAFile(accessToken, requestParams);
-            logger.info("Comment to file created");
+            ResponseBody commentsItems = boxApi.createComment(accessToken, requestParams);
+            Map<String, Object> commentsEntry = commentsItems.jsonPath().get();
+            if (commentsEntry.containsKey("type") && commentsEntry.get("type").equals("comment")) {
+                logger.info("Comment to file created");
+                return ((String) commentsEntry.get("id"));
+            } else {
+                return "";
+            }
+        }
+    }
+
+    public String createToggledCommentToFile(int folderID, String fileName, String accessToken, String toggledMessageText) {
+
+        String fileId = getFileIdRest(folderID, fileName, accessToken);
+        if (fileId.equals("")) {
+            logger.info("File " + fileName + " doesn't exist in the parent folder");
+            return "";
+        } else {
+            JSONObject item = new JSONObject();
+            JSONObject requestParams = new JSONObject();
+
+            item.put("type", "file")
+                    .put("id", fileId);
+            requestParams.put("item", item)
+                    .put("tagged_message", toggledMessageText);
+            ResponseBody commentsItems = boxApi.createComment(accessToken, requestParams);
+            Map<String, Object> commentsEntry = commentsItems.jsonPath().get();
+            if (commentsEntry.containsKey("type") && commentsEntry.get("type").equals("comment")) {
+                logger.info("Comment to file created");
+                return ((String) commentsEntry.get("id"));
+            } else {
+                return "";
+            }
         }
     }
 
@@ -149,6 +187,42 @@ public class BoxRestSteps {
             }
             return !commentsEntries.isEmpty();
 
-        } else {return false;}
+        } else {
+            return false;
+        }
+    }
+
+    public String createCommentToComment(String commentId, String accessToken, String messageText) {
+        JSONObject item = new JSONObject();
+        JSONObject requestParams = new JSONObject();
+
+        item.put("type", "comment")
+                .put("id", commentId);
+        requestParams.put("item", item)
+                .put("message", messageText);
+        ResponseBody commentsItems = boxApi.createComment(accessToken, requestParams);
+        Map<String, Object> commentsEntry = commentsItems.jsonPath().get();
+        if (commentsEntry.containsKey("type") && commentsEntry.get("type").equals("comment")) {
+            logger.info("Comment to comment was created");
+            return ((String) commentsEntry.get("id"));
+        } else {
+            logger.info("Comment to comment was not created");
+            return "";
+        }
+    }
+
+    public boolean isCommentExist(String commentToCommentID, String accessToken, String messageText) {
+        if (!commentToCommentID.equals("")) {
+            ResponseBody commentInfo = boxApi.getComment(commentToCommentID, accessToken);
+            Map<String, Object> map = commentInfo.jsonPath().get();
+            if (map.containsKey("type") && map.get("type").equals("comment")
+                    && map.get("id").equals(commentToCommentID) && map.get("message").equals(messageText)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
